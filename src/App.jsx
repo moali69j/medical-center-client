@@ -1,41 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import api from './api/axios';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import CaseEntry from './pages/CaseEntry';
+import Inventory from './pages/Inventory';
+import Services from './pages/Services';
 
 function App() {
-  const [services, setServices] = useState([]);
-  const [inventory, setInventory] = useState([]);
-
-  useEffect(() => {
-    // جلب الخدمات
-    api.get('/services').then(res => setServices(res.data));
-    // جلب المخزون
-    api.get('/inventory').then(res => setInventory(res.data));
-  }, []);
-
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>مركز الطبابة الصغير - لوحة التحكم</h1>
-      
-      <div style={{ display: 'flex', gap: '50px' }}>
-        <section>
-          <h2>الخدمات المتاحة</h2>
-          <ul>
-            {services.map(s => <li key={s.id}>{s.name} ({s.credits_required} نقطة)</li>)}
-          </ul>
-        </section>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        {/* شريط ملاحة علوي بسيط (Navbar) */}
+        <nav className="bg-white shadow-sm border-b p-4 flex justify-between items-center" dir="rtl">
+          <Link to="/" className="text-xl font-bold text-blue-700">⚙️ نظام المركز الطبي</Link>
+          <div className="flex gap-4">
+            <Link to="/" className="text-gray-600 hover:text-blue-600">الرئيسية</Link>
+            <Link to="/cases/new" className="text-gray-600 hover:text-blue-600">حالة جديدة</Link>
+            <Link to="/inventory" className="text-gray-600 hover:text-blue-600">المخزون</Link>
+            <Link to="/services" className="text-gray-600 hover:text-blue-600">الخدمات</Link>
+          </div>
+        </nav>
 
-        <section>
-          <h2>المخزون الحالي</h2>
-          <ul>
-            {inventory.map(i => (
-              <li key={i.id} style={{ color: i.quantity <= i.threshold ? 'red' : 'black' }}>
-                {i.name}: {i.quantity} {i.unit}
-              </li>
-            ))}
-          </ul>
-        </section>
+        {/* محتوى الصفحات الديناميكي */}
+        <div className="py-6">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/cases/new" element={<CaseEntry />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/services" element={<Services />} />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </Router>
   );
 }
 
