@@ -6,9 +6,22 @@ const CaseEntry = () => {
 const [availableServices, setAvailableServices] = useState([]);
 const [selectedServices, setSelectedServices] = useState([]);
 
-// جلب الخدمات عند تحميل الصفحة
+// جلب الخدمات عند تحميل الصفحة - محمي بالكامل
 useEffect(() => {
-    api.get('/services').then(res => setAvailableServices(res.data));
+    api.get('/services')
+        .then(res => {
+            // التعديل هنا: نقرأ res.data.services لأن الـ API أصبح يعيد كائناً وليس مصفوفة مباشرة
+            if (res.data && res.data.services) {
+                setAvailableServices(res.data.services);
+            } else if (Array.isArray(res.data)) {
+                // خط حماية إضافي في حال كانت مصفوفة مباشرة
+                setAvailableServices(res.data);
+            }
+        })
+        .catch(err => {
+            console.error("خطأ في جلب الخدمات داخل صفحة الحالات:", err);
+            setAvailableServices([]); // نضع مصفوفة فارغة لتجنب كراش الواجهة
+        });
 }, []);
 
 // دالة لإضافة خدمة للقائمة المختارة وحساب السعر
@@ -90,7 +103,7 @@ const addService = (serviceId) => {
             value=""
         >
             <option value="" disabled>اختر خدمة لإضافتها...</option>
-            {availableServices.map(s => (
+            {availableServices && availableServices.map(s => (
                 <option key={s.id} value={s.id}>{s.name} ({s.credits_required} نقطة)</option>
             ))}
         </select>

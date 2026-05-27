@@ -9,7 +9,23 @@ const Inventory = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [amount, setAmount] = useState('');
     const [actionType, setActionType] = useState('add'); // add أو subtract
-
+const [showCreateModal, setShowCreateModal] = useState(false);
+const [newItem, setNewItem] = useState({
+    name: '', quantity: '', unit: 'قطعة', threshold: '', is_measurable: true
+});
+const handleCreateItem = async (e) => {
+    e.preventDefault();
+    try {
+        await api.post('/inventory', newItem);
+        alert('تم إضافة المادة الجديدة للمخزن بنجاح');
+        setShowCreateModal(false);
+        setNewItem({ name: '', quantity: '', unit: 'قطعة', threshold: '', is_measurable: true });
+        fetchInventory(); // إعادة تحديث الجدول
+    // eslint-disable-next-line no-unused-vars
+    } catch (err) {
+        alert('خطأ في إضافة المادة، يرجى التحقق من الحقول');
+    }
+};
     // جلب البيانات من السيرفر
     const fetchInventory = async () => {
         try {
@@ -87,6 +103,12 @@ const Inventory = () => {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">إدارة مستودع المواد والمستهلكات</h2>
                 <span className="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-full">إجمالي الأصناف: {items.length}</span>
+           <button 
+    onClick={() => setShowCreateModal(true)}
+    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm text-sm"
+>
+    + إضافة مادة جديدة بالكامل
+</button>
             </div>
 
             {/* جدول عرض المخزون */}
@@ -138,6 +160,29 @@ const Inventory = () => {
                     </div>
                 </div>
             )}
+            {showCreateModal && (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full" dir="rtl">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">بطاقة مادة جديدة</h3>
+            <form onSubmit={handleCreateItem} className="space-y-4">
+                <input type="text" placeholder="اسم المادة (مثال: شاش، قسطرة...)" required className="w-full border p-2 rounded-lg" onChange={e => setNewItem({...newItem, name: e.target.value})} />
+                <div className="grid grid-cols-2 gap-2">
+                    <input type="number" placeholder="الكمية الابتدائية" required className="w-full border p-2 rounded-lg" onChange={e => setNewItem({...newItem, quantity: e.target.value})} />
+                    <input type="text" placeholder="وحدة القياس (قطعة، مل..)" required className="w-full border p-2 rounded-lg" value={newItem.unit} onChange={e => setNewItem({...newItem, unit: e.target.value})} />
+                </div>
+                <input type="number" placeholder="حد العتبة للتنبيه (الأمان)" required className="w-full border p-2 rounded-lg" onChange={e => setNewItem({...newItem, threshold: e.target.value})} />
+                <select className="w-full border p-2 rounded-lg" onChange={e => setNewItem({...newItem, is_measurable: e.target.value === 'true'})}>
+                    <option value="true">تلقائي (تُخصم تلقائياً مع الخدمات)</option>
+                    <option value="false">يدوي (مستهلكات عامة تستهلك يدوياً)</option>
+                </select>
+                <div className="flex gap-2 justify-end pt-2">
+                    <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">حفظ الصنف</button>
+                    <button type="button" onClick={() => setShowCreateModal(false)} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+)}
         </div>
     );
 };
