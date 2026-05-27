@@ -43,7 +43,7 @@ const addService = (serviceId) => {
                 if (res.data) {
                     setPatient(res.data); // تعبئة البيانات تلقائياً إذا وُجد
                 }
-            } catch (err) {
+            } catch {
                 console.log("مريض جديد");
             }
         }
@@ -54,7 +54,7 @@ const addService = (serviceId) => {
         try {
             const response = await api.post('/cases', { ...patient, ...caseDetails, services: [1] }); // حالياً نرسل خدمة رقم 1 للتجربة
             alert(response.data.message);
-        } catch (error) {
+        } catch {
             alert("خطأ في البيانات، يرجى التأكد من الحقول الأساسية");
         }
     };
