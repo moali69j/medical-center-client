@@ -60,46 +60,45 @@ const CaseEntry = () => {
     }, [searchQuery]);
 
     // -----------------------------------------------------------------
-    // دوال التحكم بالتصفير وإعادة الضبط (إصلاح مشكلة التراكم والخلايا)
+    // دوال التحكم بالتصفير وإعادة الضبط
     // -----------------------------------------------------------------
-  const resetCurrentVisit = () => {
-    setCaseData({
-        case_type: 'internal',
-        blood_pressure: '',
-        sugar_level: '',
-        oxygen_saturation: '',
-        visit_notes: '',
-        total_paid: 0
-    });
-    setSelectedServices([]);
-    setExtraItems([]); // تصفير المواد الإضافية للزيارة الحالية فقط
-};
-// 1. دالة اختيار مريض من قائمة البحث
-const selectPatient = (patient) => {
-    setIsOldPatient(true);
-    
-    const history = patient.case_reports || patient.caseReports || [];
-    setPastCases(history);
-    
-    resetCurrentVisit(); 
+    const resetCurrentVisit = () => {
+        setCaseData({
+            case_type: 'internal',
+            blood_pressure: '',
+            sugar_level: '',
+            oxygen_saturation: '',
+            visit_notes: '',
+            total_paid: 0
+        });
+        setSelectedServices([]);
+        setExtraItems([]); 
+    };
 
-    // التعبئة الصريحة والمباشرة من المريض المختار
-    setPatientData({
-        id: patient.id,
-        full_name: patient.full_name || '',
-        phone: patient.phone || '',
-        national_id: patient.national_id || '',
-        address: patient.address || '',
-        blood_type: patient.blood_type || '',
-        chronic_diseases: patient.chronic_diseases || '',
-        current_medications: patient.current_medications || '',
-        // نقرأ الحقل مباشرة من الـ patient القادم من السيرفر هكذا:
-        permanent_medical_notes: patient.permanent_medical_notes || '' 
-    });
-    
-    setSearchResults([]);
-    setSearchQuery('');
-};
+    const selectPatient = (patient) => {
+        setIsOldPatient(true);
+        
+        const history = patient.case_reports || patient.caseReports || [];
+        setPastCases(history);
+        
+        resetCurrentVisit(); 
+
+        setPatientData({
+            id: patient.id,
+            full_name: patient.full_name || '',
+            phone: patient.phone || '',
+            national_id: patient.national_id || '',
+            address: patient.address || '',
+            blood_type: patient.blood_type || '',
+            chronic_diseases: patient.chronic_diseases || '',
+            current_medications: patient.current_medications || '',
+            permanent_medical_notes: patient.permanent_medical_notes || '' 
+        });
+        
+        setSearchResults([]);
+        setSearchQuery('');
+    };
+
     const resetFormToNewPatient = () => {
         setIsOldPatient(false);
         setPastCases([]);
@@ -112,14 +111,12 @@ const selectPatient = (patient) => {
     };
 
     // -----------------------------------------------------------------
-    // حساب الفاتورة تلقائياً بناءً على اختيار الخدمات والمواد الإضافية
+    // تعديل مالي: الفاتورة تحسب الخدمات فقط لأن المواد مشمولة ضمناً بالكريدت
     // -----------------------------------------------------------------
     useEffect(() => {
         const servicesTotal = selectedServices.reduce((sum, s) => sum + (s.calculated_price || 0), 0);
-        const itemsTotal = extraItems.reduce((sum, item) => sum + ((item.selling_price || 0) * item.qty), 0);
-        
-        setCaseData(prev => ({ ...prev, total_paid: servicesTotal + itemsTotal }));
-    }, [selectedServices, extraItems]);
+        setCaseData(prev => ({ ...prev, total_paid: servicesTotal }));
+    }, [selectedServices]);
 
     const handleAddService = (id) => {
         const service = availableServices.find(s => s.id === parseInt(id));
@@ -131,58 +128,50 @@ const selectPatient = (patient) => {
     const handleAddExtraItem = (id) => {
         const item = inventoryItems.find(i => i.id === parseInt(id));
         if (item && !extraItems.find(i => i.id === item.id)) {
-            setExtraItems([...extraItems, { id: item.id, name: item.name, selling_price: item.selling_price, qty: 1, unit: item.unit }]);
+            setExtraItems([...extraItems, { id: item.id, name: item.name, qty: 1, unit: item.unit }]);
         }
     };
 
-    // -----------------------------------------------------------------
-    // حماية وإرسال طلب الحفظ للسيرفر
-    // -----------------------------------------------------------------
-// 2. دالة الحفظ النهائية بالتراكم الذكي المستقر
-const handleSubmitCase = async (e) => {
-    e.preventDefault();
-    if (selectedServices.length === 0) {
-        alert('يجب اختيار خدمة واحدة على الأقل لفتح الحالة!');
-        return;
-    }
+    const handleSubmitCase = async (e) => {
+        e.preventDefault();
+        if (selectedServices.length === 0) {
+            alert('يجب اختيار خدمة واحدة على الأقل لفتح الحالة!');
+            return;
+        }
 
-    let finalPermanentNotes = patientData.permanent_medical_notes ? patientData.permanent_medical_notes.trim() : '';
+        let finalPermanentNotes = patientData.permanent_medical_notes ? patientData.permanent_medical_notes.trim() : '';
 
-    // إذا كان المريض مسجلاً سابقاً ولدينا حالات مخزنة
-    if (isOldPatient && pastCases.length > 0) {
-        // نجلب الملاحظة الأصلية التي دخل بها المريض العيادة اليوم من أول حالة سابقة
-        // في السيرفر، الملاحظة تكون مخزنة في مودل الـ Patient نفسه
-        const originalNotes = pastCases[0]?.patient?.permanent_medical_notes 
-            ? pastCases[0].patient.permanent_medical_notes.trim() 
-            : '';
+        if (isOldPatient && pastCases.length > 0) {
+            const originalNotes = pastCases[0]?.patient?.permanent_medical_notes 
+                ? pastCases[0].patient.permanent_medical_notes.trim() 
+                : '';
 
-        // إذا كانت الملاحظة الحالية في الواجهة تختلف عن الأصلية (أي أن الممرض أضاف شيئاً جديداً)
-        if (finalPermanentNotes !== originalNotes && originalNotes !== '') {
-            // نتحقق أن الممرض لم يقم بمسح النص القديم، ونقوم بالدمج التراكمي النظيف
-            if (!finalPermanentNotes.includes(originalNotes)) {
-                finalPermanentNotes = `${originalNotes}\n📌 تعديل جديد (${new Date().toLocaleDateString('ar-SY')}): ${finalPermanentNotes}`;
+            if (finalPermanentNotes !== originalNotes && originalNotes !== '') {
+                if (!finalPermanentNotes.includes(originalNotes)) {
+                    finalPermanentNotes = `${originalNotes}\n📌 تعديل جديد (${new Date().toLocaleDateString('ar-SY')}): ${finalPermanentNotes}`;
+                }
             }
         }
-    }
 
-    const finalPayload = {
-        patient: {
-            ...patientData,
-            permanent_medical_notes: finalPermanentNotes // شحن النص المتراكم النهائي
-        },
-        case: caseData,
-        services: selectedServices.map(s => s.id),
-        extra_items: extraItems.map(i => ({ id: i.id, quantity: i.qty }))
+        const finalPayload = {
+            patient: {
+                ...patientData,
+                permanent_medical_notes: finalPermanentNotes 
+            },
+            case: caseData,
+            services: selectedServices.map(s => s.id),
+            extra_items: extraItems.map(i => ({ id: i.id, quantity: i.qty }))
+        };
+
+        try {
+            const response = await api.post('/cases', finalPayload);
+            alert(response.data.message || 'تم تسجيل الحالة بنجاح!');
+            resetFormToNewPatient(); 
+        } catch (err) {
+            alert(err.response?.data?.message || 'خطأ أثناء حفظ الحالة الموحدة');
+        }
     };
 
-    try {
-        const response = await api.post('/cases', finalPayload);
-        alert(response.data.message || 'تم تسجيل الحالة وتحديث السجل التراكمي بنجاح!');
-        resetFormToNewPatient(); // تصفير كلي آمن بعد النجاح
-    } catch (err) {
-        alert(err.response?.data?.message || 'خطأ أثناء حفظ الحالة الموحدة');
-    }
-};
     return (
         <div className="max-w-6xl mx-auto p-6 space-y-6" dir="rtl">
             
@@ -342,15 +331,15 @@ const handleSubmitCase = async (e) => {
                         <hr className="border-gray-100" />
 
                         <div>
-                            <h4 className="font-bold text-gray-700 text-sm mb-2">2. إضافة مستهلكات إضافية كاش (خارج الخدمة):</h4>
+                            <h4 className="font-bold text-gray-700 text-sm mb-2">2. ربط مواد إضافية مستهلكة في زيارة اليوم:</h4>
                             <select className="w-full border p-2 rounded-lg text-xs" value="" onChange={(e) => handleAddExtraItem(e.target.value)}>
-                                <option value="" disabled>اختر مادة إضافية من المخزن (مثل شاش زائد)...</option>
+                                <option value="" disabled>اختر مادة إضافية مستهلكة (مثل شاش زائد)...</option>
                                 {inventoryItems.map(i => <option key={i.id} value={i.id}>{i.name} (متوفر: {i.quantity} {i.unit})</option>)}
                             </select>
                             <div className="space-y-2 mt-2">
                                 {extraItems.map((item, idx) => (
                                     <div key={item.id} className="flex justify-between items-center bg-gray-50 p-2 rounded-xl text-xs border">
-                                        <span className="font-medium text-gray-700">{item.name} (+ {(item.selling_price * item.qty).toLocaleString()} ل.س)</span>
+                                        <span className="font-medium text-gray-700">{item.name}</span>
                                         <div className="flex items-center gap-2">
                                             <input type="number" min="1" className="w-12 border text-center p-1 rounded-lg" value={item.qty} onChange={e => {
                                                 const updated = [...extraItems];
@@ -372,7 +361,6 @@ const handleSubmitCase = async (e) => {
                             <div className="space-y-3 text-xs text-gray-600">
                                 <div className="flex justify-between"><span>إجمالي النقاط (Credits):</span><span className="font-bold text-gray-800">{selectedServices.reduce((sum, s) => sum + s.credits_required, 0)} نقطة</span></div>
                                 <div className="flex justify-between"><span>حساب الخدمات التلقائي:</span><span>{selectedServices.reduce((sum, s) => sum + (s.calculated_price || 0), 0).toLocaleString()} ل.س</span></div>
-                                <div className="flex justify-between"><span>المستهلكات الإضافية المبيعة:</span><span>{extraItems.reduce((sum, i) => sum + (i.selling_price * i.qty), 0).toLocaleString()} ل.س</span></div>
                                 <hr />
                                 <div className="flex justify-between items-center text-sm pt-2">
                                     <span className="font-bold text-blue-800 text-base">المبلغ النهائي المستلم:</span>
