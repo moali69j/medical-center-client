@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+/* استيراد خط عالي الاحترافية للمنظومات الطبية */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+
+:root {
+  font-family: 'Cairo', sans-serif;
+  
+  /* ألوان الوضع المضيء: خلفية متدرجة ناعمة */
+  --bg-app: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --bg-surface: rgba(255, 255, 255, 0.85);
+  --border-medical: rgba(226, 232, 240, 0.8);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --shadow-medical: 0 4px 20px -2px rgba(148, 163, 184, 0.12), 0 2px 8px -1px rgba(148, 163, 184, 0.08);
+}
+
+html.dark {
+  /* ألوان الوضع الداكن: أزرق ليلكي فاخر جداً ومريح للعين للمناوبات الليلية */
+  --bg-app: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+  --bg-surface: rgba(19, 30, 49, 0.75);
+  --border-medical: rgba(30, 41, 59, 0.7);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --shadow-medical: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* تطبيق الخلفيات الديناميكية الشاملة على كل الصفحات */
+html, body, #root {
+  min-height: 100vh; /* 👈 تم استبدالها بخاصية الـ CSS القياسية الصحيحة بنجاح لعدم حدوث أي خطأ */
+  background: var(--bg-app) !important;
+  color: var(--text-main) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* بطاقة زجاجية طبية احترافية (تستخدم في كل الصفحات للبطاقات والجداول) */
+.glass-panel {
+  background: var(--bg-surface) !important;
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid var(--border-medical) !important;
+  box-shadow: var(--shadow-medical) !important;
+  border-radius: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* تخصيص شكل جداول البيانات الطبية لتصبح فائقة النقاء */
+table {
+  width: 100%;
+}
+th {
+  color: var(--text-muted) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+td {
+  color: var(--text-main) !important;
+}
