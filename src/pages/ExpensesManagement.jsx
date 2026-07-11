@@ -4,13 +4,12 @@ import api from '../api/axios';
 const ExpensesManagement = () => {
     const [expenseForm, setExpenseForm] = useState({ amount: '', category: 'رواتب وأجور', notes: '' });
     const [submitLoading, setSubmitLoading] = useState(false);
-    const [expensesList, setExpensesList] = useState([]); // حالة عرض المصاريف والرواتب في هذه الصفحة
+    const [expensesList, setExpensesList] = useState([]); 
 
     const [dateFilters, setDateFilters] = useState({ from_date: '', to_date: '' });
     const [staffSummary, setStaffSummary] = useState({ total_staff_owed: 0, detailed_shares: [] });
     const [loadingStaff, setLoadingStaff] = useState(false);
 
-    // دالة جلب المصاريف العامة والرواتب
     const fetchExpenses = async () => {
         try {
             const res = await api.get('/expenses');
@@ -46,7 +45,7 @@ const ExpensesManagement = () => {
             });
             alert('تم تسجيل القيد المالي بنجاح!');
             setExpenseForm({ amount: '', category: 'رواتب وأجور', notes: '' });
-            fetchExpenses(); // تحديث جدول المصاريف فوراً في نفس الصفحة
+            fetchExpenses(); 
             fetchStaffReport();
         } catch (err) {
             alert('خطأ أثناء تسجيل المصروف');
@@ -64,10 +63,20 @@ const ExpensesManagement = () => {
                 notes: `تصفية مستحقات كاش عن حالة المريض: [${patientName}] - رقم: #${caseId}`,
                 case_id: caseId
             });
-            alert('تم دفع مستحقات الممرض بنجاح!');
-            fetchExpenses();
-            fetchStaffReport();
-        } catch (err) { alert('فشل التصفية'); }
+            alert('تم دفع مستحقات الممرض بنجاح وتصفية القيد المالي!');
+            
+            // التعديل الذكي: حذف الحالة من الجدول فوراً وتحديث المجموع الإجمالي بدون انتظار الـ refresh
+            setStaffSummary(prev => {
+                const updatedShares = prev.detailed_shares.filter(c => c.id !== caseId);
+                const updatedTotal = updatedShares.reduce((sum, item) => sum + parseFloat(item.staff_share), 0);
+                return {
+                    total_staff_owed: updatedTotal,
+                    detailed_shares: updatedShares
+                };
+            });
+
+            fetchExpenses(); // لتحديث جدول المصاريف العامة والرواتب في الجانب الآخر
+        } catch (err) { alert('فشل التصفية ورجاء التحقق من المدخلات'); }
     };
 
     const handleExportExpenses = () => {
@@ -96,8 +105,6 @@ const ExpensesManagement = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* نموذج الإدخال وجدول المصاريف المدخلة */}
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4 text-xs">
                         <h3 className="font-bold text-gray-800 text-sm border-b pb-2">✍️ تسجيل قيد صرف / دفع رواتب</h3>
@@ -125,7 +132,6 @@ const ExpensesManagement = () => {
                         </form>
                     </div>
 
-                    {/* جدول عرض الرواتب والمصاريف المسجلة حالياً في هذه الصفحة */}
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3 text-xs max-h-64 overflow-y-auto">
                         <h4 className="font-bold text-gray-700 border-b pb-1">📋 رواتب ومصاريف مسجلة مؤخراً:</h4>
                         <div className="space-y-2">
@@ -142,7 +148,6 @@ const ExpensesManagement = () => {
                     </div>
                 </div>
 
-                {/* قسم مستحقات الممرضين والكادر */}
                 <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex gap-2 items-center w-full text-xs text-gray-500">
@@ -181,7 +186,7 @@ const ExpensesManagement = () => {
                                     {loadingStaff ? (
                                         <tr><td colSpan="6" className="text-center py-6 text-gray-400">جاري احتساب النسب المئوية للحالات...</td></tr>
                                     ) : staffSummary.detailed_shares?.length === 0 ? (
-                                        <tr><td colSpan="6" className="text-center py-6 text-gray-400">لا يوجد حالات طبية مسجلة في هذا النطاق الزمني.</td></tr>
+                                        <tr><td colSpan="6" className="text-center py-6 text-gray-400">لا يوجد حالات طبية معلقة بحاجة لتصفية في هذا النطاق الزمني.</td></tr>
                                     ) : (
                                         staffSummary.detailed_shares?.map(c => (
                                             <tr key={c.id} className="hover:bg-gray-50/50">
