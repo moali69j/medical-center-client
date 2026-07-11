@@ -61,12 +61,21 @@ const ExpensesManagement = () => {
             await api.post('/expenses', {
                 amount: staffShareAmount,
                 category: 'توزيع أرباح كادر طبي',
-                notes: `تصفية مستحقات كاش عن حالة المريض: [${patientName}] - رقم: #${caseId}`
+                notes: `تصفية مستحقات كاش عن حالة المريض: [${patientName}] - رقم: #${caseId}`,
+                case_id: caseId
             });
             alert('تم دفع مستحقات الممرض بنجاح!');
             fetchExpenses();
             fetchStaffReport();
         } catch (err) { alert('فشل التصفية'); }
+    };
+
+    const handleExportExpenses = () => {
+        const queryParams = new URLSearchParams({
+            from_date: dateFilters.from_date || '',
+            to_date: dateFilters.to_date || ''
+        }).toString();
+        window.open(`http://localhost:8000/api/export/expenses?${queryParams}`, '_blank');
     };
 
     return (
@@ -76,9 +85,14 @@ const ExpensesManagement = () => {
                     <h2 className="text-xl font-bold text-gray-800">💸 إدارة الخزنة الشاملة والمصاريف والرواتب</h2>
                     <p className="text-xs text-gray-400 mt-1">ضبط الرواتب يدويّاً، وتتبع مشتريات المستودع وتصفية حصص الممرضين الطبية</p>
                 </div>
-                <button onClick={() => window.location.href = '/financial'} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-xs transition">
-                    ← العودة للوحة المالية والتقارير
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={handleExportExpenses} className="bg-green-700 hover:bg-green-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm">
+                        🟢 تصدير المصاريف لـ Excel
+                    </button>
+                    <button onClick={() => window.location.href = '/financial'} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-xs transition">
+                        ← العودة للوحة المالية والتقارير
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

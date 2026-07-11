@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import * as XLSX from 'xlsx'; // 1. استيراد مكتبة الإكسل
 
 const FinancialDashboard = () => {
     const [filters, setFilters] = useState({ from_date: '', to_date: '', service_id: '' });
@@ -37,71 +36,21 @@ const FinancialDashboard = () => {
 
     useEffect(() => { void fetchFinancialData(); }, [filters]);
 
-    // 2. دالة التصدير العبقرية لتوليد ملف تقرير رسمي منسق لصاحب المركز
-    const handleExportToExcel = () => {
-        if (casesDetails.length === 0 && expensesDetails.length === 0) {
-            alert('لا يوجد بيانات حالية لتصديرها!');
-            return;
-        }
+    // دالة التصدير باستخدام الباك إند
+    const handleExportCases = () => {
+        const queryParams = new URLSearchParams({
+            from_date: filters.from_date || '',
+            to_date: filters.to_date || ''
+        }).toString();
+        window.open(`http://localhost:8000/api/export/cases?${queryParams}`, '_blank');
+    };
 
-        // أ) تجهيز ورقة الملخص المالي العام (Summary Sheet)
-        const summaryRows = [
-            ["التقرير المالي والإداري الرسمي للمركز الطبي"],
-            ["نطاق الفلترة الزمنية:", filters.from_date || "من البداية", "إلى تاريخ:", filters.to_date || "اليوم"],
-            [],
-            ["المؤشر المالي", "القيمة الإجمالية (ل.س / نقاط)"],
-            ["إجمالي عدد الحالات الطبية", summary.total_cases || 0],
-            ["إجمالي الكاش المستلم فعلياً", summary.total_revenue || 0],
-            ["إجمالي الكريديت (النقاط المستهلكة)", summary.total_credits_consumed || 0],
-            ["إجمالي تكاليف المستهلكات والمواد", summary.total_cost_of_materials || 0],
-            ["إجمالي حصة المركز الصافية", summary.total_center_share || 0],
-            ["إجمالي مستحقات وحصص الكادر (الـ 40% والـ 60%)", summary.total_staff_share || 0],
-            ["إجمالي المصاريف والرواتب ومشتريات المستودع", summary.total_expenses || 0],
-            ["صافي أرباح صاحب المركز النهائية", summary.final_net_profit || 0]
-        ];
-
-        // ب) تجهيز ورقة سجل زيارات المرضى بالتفصيل (Cases Sheet)
-        const casesRows = [
-            ["تاريخ الحالة", "نوع الزيارة", "الكاش المستلم (ل.س)", "حصة المركز (ل.س)", "حصة الكادر (ل.س)", "تكلفة المستهلكات (ل.س)"]
-        ];
-        casesDetails.forEach(c => {
-            casesRows.push([
-                new Date(c.created_at).toLocaleDateString('ar-SY'),
-                c.case_type === 'internal' ? 'داخلية' : 'خارجية',
-                parseFloat(c.total_paid),
-                parseFloat(c.center_share),
-                parseFloat(c.staff_share),
-                parseFloat(c.total_cost_of_materials)
-            ]);
-        });
-
-        // ج) تجهيز ورقة سجل فواتير المصاريف والرواتب (Expenses Sheet)
-        const expensesRows = [
-            ["تاريخ القيد", "بند وتصنيف المصروف", "المبلغ المالي المخصوم (ل.س)", "البيان والتفاصيل التفصيلية"]
-        ];
-        expensesDetails.forEach(e => {
-            expensesRows.push([
-                new Date(e.created_at).toLocaleDateString('ar-SY'),
-                e.category,
-                parseFloat(e.amount),
-                e.notes
-            ]);
-        });
-
-        // د) بناء كتاب العمل (Workbook) وشحن الأوراق الثلاثة المتكاملة
-        const wb = XLSX.utils.book_new();
-        
-        const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
-        const wsCases = XLSX.utils.aoa_to_sheet(casesRows);
-        const wsExpenses = XLSX.utils.aoa_to_sheet(expensesRows);
-
-        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي العام");
-        XLSX.utils.book_append_sheet(wb, wsCases, "سجل زيارات وحالات المرضى");
-        XLSX.utils.book_append_sheet(wb, wsExpenses, "سجل الرواتب والمصاريف");
-
-        // هـ) تحميل الملف فوراً في جهاز مدخل البيانات بتسمية ديناميكية ذكية
-        const fileName = `تقرير_المركز_المالي_${new Date().toISOString().slice(0,10)}.xlsx`;
-        XLSX.writeFile(wb, fileName);
+    const handleExportExpenses = () => {
+        const queryParams = new URLSearchParams({
+            from_date: filters.from_date || '',
+            to_date: filters.to_date || ''
+        }).toString();
+        window.open(`http://localhost:8000/api/export/expenses?${queryParams}`, '_blank');
     };
 
     return (
@@ -116,10 +65,16 @@ const FinancialDashboard = () => {
                 <div className="flex gap-2">
                     {/* زر التصدير إلى إكسل الاحترافي الأخضر */}
                     <button 
-                        onClick={handleExportToExcel}
+                        onClick={handleExportCases}
                         className="bg-green-700 hover:bg-green-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5"
                     >
-                        🟢 تصدير التقرير المالي الحالي لـ Excel
+                        🟢 تصدير الحالات (Excel)
+                    </button>
+                    <button 
+                        onClick={handleExportExpenses}
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5"
+                    >
+                        🟢 تصدير المصاريف (Excel)
                     </button>
                     <button 
                         onClick={() => window.location.href = '/expenses-management'} 

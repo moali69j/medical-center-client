@@ -7,6 +7,7 @@ import Services from './pages/Services';
 import FinancialDashboard from './pages/FinancialDashboard';
 import ExpensesManagement from './pages/ExpensesManagement';
 import PatientsManagement from './pages/PatientsManagement';
+import BackupRestore from './pages/BackupRestore';
 function App() {
   return (
     <Router>
@@ -33,6 +34,7 @@ function App() {
             <Route path="/financial" element={<FinancialDashboard />} />
             <Route path="/expenses-management" element={<ExpensesManagement />} />
             <Route path="/patients-management" element={<PatientsManagement />} />
+            <Route path="/backup-restore" element={<BackupRestore />} />
           </Routes>
         </div>
       </div>

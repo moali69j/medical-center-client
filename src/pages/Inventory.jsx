@@ -80,6 +80,10 @@ const Inventory = () => {
         }
     };
 
+    const handleExportInventory = () => {
+        window.open('http://localhost:8000/api/export/inventory', '_blank');
+    };
+
     if (loading) return <div className="text-center p-10 text-xl font-bold">جاري تحميل المخزون...</div>;
 
     return (
@@ -87,6 +91,9 @@ const Inventory = () => {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">إدارة مستودع المواد والمستهلكات</h2>
                 <div className="flex gap-3 items-center">
+                    <button onClick={handleExportInventory} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition shadow-sm text-sm font-bold">
+                        🟢 تصدير للإكسل
+                    </button>
                     <span className="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-full">إجمالي الأصناف: {items.length}</span>
                     <button onClick={() => setShowCreateModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm text-sm font-bold">
                         + إضافة مادة جديدة بالكامل

@@ -16,6 +16,7 @@ const Dashboard = () => {
         { title: 'إدارة الخزنة والمصاريف', desc: 'تسجيل رواتب الموظفين، فواتير التشغيل وتصفية حصص الممرضين كاش', path: 'expenses-management', icon: '💸', badge: 'المصروفات', badgeColor: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
         { title: 'إدارة المخزون والمستودع', desc: 'مراقبة كميات المواد الطبية وتتبع حركات التوريد الحية', path: 'inventory', icon: '📦', badge: 'المستودع', badgeColor: 'bg-teal-500/10 text-teal-500 border-teal-500/20' },
         { title: 'قائمة الخدمات والعيادات', desc: 'تعديل أسعار الخدمات، نقاط الكريديت المطلوبة والمواد المرتبطة بها', path: 'services', icon: '⚡', badge: 'التسعير الذكي', badgeColor: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+        { title: 'النسخ الاحتياطي والاستعادة', desc: 'عمل نسخ احتياطية لقاعدة البيانات وحمايتها من الفقدان', path: 'backup-restore', icon: '💾', badge: 'أمان البيانات', badgeColor: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
     ];
 
     return (

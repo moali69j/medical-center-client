@@ -5,6 +5,10 @@ const PatientsManagement = () => {
     const [patientsList, setPatientsList] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
+    
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     // حالات النافذة المنبثقة للملف الشخصي التفاعلي
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -13,23 +17,39 @@ const PatientsManagement = () => {
     const [showProfileModal, setShowProfileModal] = useState(false);
 
     // 1. جلب قائمة المرضى المسجلين عند تحميل الصفحة
-    const fetchPatients = async () => {
+    const fetchPatients = async (page = 1, search = '') => {
         setLoading(true);
         try {
-            const res = await api.get('/patients');
-            setPatientsList(res.data || []);
+            const url = search 
+                ? `/patients/search?query=${search}&page=${page}`
+                : `/patients?page=${page}`;
+                
+            const res = await api.get(url);
+            
+            // Handle Laravel Pagination (res.data.data) vs normal array fallback
+            if (res.data && res.data.data) {
+                setPatientsList(res.data.data);
+                setCurrentPage(res.data.current_page);
+                setTotalPages(res.data.last_page);
+            } else {
+                setPatientsList(res.data || []);
+                setTotalPages(1);
+            }
         } catch (err) {
             console.error("خطأ في جلب أرشيف المرضى:", err);
             alert("فشل في الاتصال بالسيرفر لجلب قائمة المرضى");
-       //  السطر الصحيح والمطلوب
-} finally {
-    setLoading(false);
-}
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        void fetchPatients();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchPatients(1, searchQuery);
+        }, 500); // 500ms debounce for search
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
 
     // 2. دالة جلب التاريخ المرضي والزيارات الكاملة لمريض معين عند النقر عليه
     const handleOpenPatientProfile = async (patient) => {
@@ -49,12 +69,10 @@ const PatientsManagement = () => {
         }
     };
 
-    // 3. محرك البحث الفوري اللحظي (تم إصلاح الـ return هنا)
-    const filteredPatients = patientsList.filter(p => {
-        const nameMatch = p.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
-        const phoneMatch = p.phone_number?.includes(searchQuery) || p.phone?.includes(searchQuery);
-        return nameMatch || phoneMatch; // إصلاح: إرجاع النتيجة الحقيقية للفلتر
-    });
+    // دالة التصدير للإكسل عبر الباك إند
+    const handleExportPatients = () => {
+        window.open('http://localhost:8000/api/export/patients', '_blank');
+    };
 
     if (loading) return <div className="text-center p-10 text-xl font-bold text-gray-600">🔍 جاري فتح ملفات وأرشيف المرضى المسجلين...</div>;
 
@@ -67,7 +85,12 @@ const PatientsManagement = () => {
                     <h2 className="text-xl font-bold text-gray-800">👥 أرشيف سجلات المرضى والولاء الطبي</h2>
                     <p className="text-xs text-gray-400 mt-1">البحث الفوري عن المريض واستعراض السجل التاريخي الكامل لزياراته وعملياته</p>
                 </div>
-                
+                <button 
+                    onClick={handleExportPatients}
+                    className="bg-green-700 hover:bg-green-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5"
+                >
+                    🟢 تصدير قائمة المرضى لـ Excel
+                </button>
             </div>
 
             {/* شريط البحث الذكي السريع */}
@@ -99,10 +122,10 @@ const PatientsManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y text-gray-700 font-medium">
-                            {filteredPatients.length === 0 ? (
+                            {patientsList.length === 0 ? (
                                 <tr><td colSpan="5" className="text-center py-8 text-gray-400 font-bold">⚠️ لا يوجد مريض مطابق لبيانات البحث الحالية بالمركز.</td></tr>
                             ) : (
-                                filteredPatients.map(p => (
+                                patientsList.map(p => (
                                     <tr key={p.id} className="hover:bg-gray-50/30 transition">
                                         <td className="p-4 font-bold text-gray-900 text-sm">{p.full_name}</td>
                                         <td className="p-4 font-mono text-gray-500 text-xs">{p.phone || p.phone_number || '— لا يوجد رقم'}</td>
@@ -126,6 +149,29 @@ const PatientsManagement = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* أزرار التنقل بين الصفحات (Pagination) */}
+                {totalPages > 1 && (
+                    <div className="flex justify-between items-center p-4 bg-gray-50 border-t">
+                        <button 
+                            disabled={currentPage === 1}
+                            onClick={() => fetchPatients(currentPage - 1, searchQuery)}
+                            className="bg-white border text-gray-700 font-bold px-4 py-2 rounded-lg text-xs disabled:opacity-50"
+                        >
+                            السابق
+                        </button>
+                        <span className="text-xs text-gray-500 font-bold">
+                            صفحة {currentPage} من {totalPages}
+                        </span>
+                        <button 
+                            disabled={currentPage === totalPages}
+                            onClick={() => fetchPatients(currentPage + 1, searchQuery)}
+                            className="bg-white border text-gray-700 font-bold px-4 py-2 rounded-lg text-xs disabled:opacity-50"
+                        >
+                            التالي
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* 💎 النافذة المنبثقة التفاعلية (Patient Profile Modal) */}
