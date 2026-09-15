@@ -8,24 +8,35 @@ import FinancialDashboard from './pages/FinancialDashboard';
 import ExpensesManagement from './pages/ExpensesManagement';
 import PatientsManagement from './pages/PatientsManagement';
 import BackupRestore from './pages/BackupRestore';
+
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        {/* شريط ملاحة علوي بسيط (Navbar) */}
-        <nav className="bg-white shadow-sm border-b p-4 flex justify-between items-center" dir="rtl">
-          <Link to="/" className="text-xl font-bold text-blue-700">⚙️ نظام المركز الطبي</Link>
-          <div className="flex gap-4">
-            <Link to="/" className="text-gray-600 hover:text-blue-600">الرئيسية</Link>
-            <Link to="/cases/new" className="text-gray-600 hover:text-blue-600">حالة جديدة</Link>
-            <Link to="/inventory" className="text-gray-600 hover:text-blue-600">المخزون</Link>
-            <Link to="/services" className="text-gray-600 hover:text-blue-600">الخدمات</Link>
-            <Link to="/financial" className="text-gray-600 hover:text-blue-600">المالية</Link>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-['Cairo'] transition-colors duration-300">
+        {/* شريط ملاحة علوي فاخر مطابق لهوية أطلس الطبية */}
+        <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/80 dark:border-slate-800 shadow-xs px-6 py-3.5 flex justify-between items-center" dir="rtl">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] to-[#16a34a] flex items-center justify-center text-white font-black text-lg shadow-md group-hover:scale-105 transition-transform">
+              🩺
+            </div>
+            <div>
+              <span className="text-base font-black text-[#1e3a8a] dark:text-blue-400 tracking-tight block leading-tight">فريق أطلس</span>
+              <span className="text-[10px] font-bold text-[#16a34a] tracking-wider uppercase block">لخدمات التمريض</span>
+            </div>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+            <Link to="/" className="px-3.5 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-[#1e3a8a] dark:hover:text-blue-400 transition">الرئيسية</Link>
+            <Link to="/cases/new" className="px-3.5 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-[#1e3a8a] dark:hover:text-blue-400 transition">حالة جديدة</Link>
+            <Link to="/inventory" className="px-3.5 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-[#1e3a8a] dark:hover:text-blue-400 transition">المخزون</Link>
+            <Link to="/services" className="px-3.5 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-[#1e3a8a] dark:hover:text-blue-400 transition">الخدمات</Link>
+            <Link to="/financial" className="px-3.5 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-[#1e3a8a] dark:hover:text-blue-400 transition">المالية</Link>
+            <Link to="/patients-management" className="px-3.5 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-[#1e3a8a] dark:hover:text-blue-400 transition">المرضى</Link>
           </div>
         </nav>
 
         {/* محتوى الصفحات الديناميكي */}
-        <div className="py-6">
+        <div className="py-8 px-4 sm:px-6">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/cases/new" element={<CaseEntry />} />
