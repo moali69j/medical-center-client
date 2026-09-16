@@ -28,7 +28,11 @@ const CaseEntry = () => {
 
     useEffect(() => {
         api.get('/services').then(res => setAvailableServices(res.data.services || [])).catch(() => {});
-        api.get('/inventory').then(res => setInventoryItems(res.data || [])).catch(() => {});
+        api.get('/inventory').then(res => {
+            const allItems = res.data || [];
+            // الطريقة الأولى: استبعاد مواد العهدة العامة (المراهم والمعقمات) واقتصار المواد الإضافية على المواد القابلة للقياس
+            setInventoryItems(allItems.filter(i => i.is_measurable));
+        }).catch(() => {});
     }, []);
 
     // البحث اللحظي مع تصحيح تحذيرات ESLint عبر تجنب setState المتزامن المباشر الضار
@@ -315,18 +319,18 @@ const CaseEntry = () => {
                 {/* الفاتورة الذكية والمستهلكات */}
                 <div className="bg-white p-6 rounded-3xl shadow-xs border border-slate-200/80 grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    <div className="space-y-5">
+                    <div className="space-y-6">
                         <div>
-                            <h4 className="font-bold text-slate-700 text-xs mb-2.5">1. اختيار الطبابات والخدمات المقدمة:</h4>
-                            <select className="w-full border border-slate-200 p-3 rounded-xl text-xs bg-slate-50 outline-none font-medium" value="" onChange={(e) => handleAddService(e.target.value)}>
+                            <h4 className="font-bold text-slate-800 text-sm mb-2.5">1. اختيار الطبابات والخدمات المقدمة:</h4>
+                            <select className="w-full border border-slate-200 p-3.5 rounded-xl text-sm bg-slate-50 outline-none font-semibold text-slate-700 focus:ring-2 focus:ring-[#1e3a8a]" value="" onChange={(e) => handleAddService(e.target.value)}>
                                 <option value="" disabled>اختر خدمة من القائمة لإضافتها للحالة...</option>
                                 {availableServices.map(s => <option key={s.id} value={s.id}>{s.name} ({s.credits_required} نقطة - {s.calculated_price?.toLocaleString()} ل.س)</option>)}
                             </select>
                             <div className="flex flex-wrap gap-2 mt-3">
                                 {selectedServices.map(s => (
-                                    <span key={s.id} className="bg-blue-50 text-[#1e3a8a] px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 border border-blue-200">
+                                    <span key={s.id} className="bg-blue-50 text-[#1e3a8a] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-blue-200 shadow-2xs">
                                         {s.name} ({s.calculated_price?.toLocaleString()} ل.س)
-                                        <button type="button" onClick={() => handleRemoveService(s.id)} className="text-red-500 font-black hover:text-red-700">×</button>
+                                        <button type="button" onClick={() => handleRemoveService(s.id)} className="text-red-500 font-black hover:text-red-700 text-sm mr-1">×</button>
                                     </span>
                                 ))}
                             </div>
@@ -335,23 +339,23 @@ const CaseEntry = () => {
                         <hr className="border-slate-100" />
 
                         <div>
-                            <h4 className="font-bold text-slate-700 text-xs mb-2.5">2. ربط مواد إضافية مستهلكة في زيارة اليوم:</h4>
-                            <select className="w-full border border-slate-200 p-3 rounded-xl text-xs bg-slate-50 outline-none font-medium" value="" onChange={(e) => handleAddExtraItem(e.target.value)}>
+                            <h4 className="font-bold text-slate-800 text-sm mb-2.5">2. ربط مواد إضافية مستهلكة في زيارة اليوم:</h4>
+                            <select className="w-full border border-slate-200 p-3.5 rounded-xl text-sm bg-slate-50 outline-none font-semibold text-slate-700 focus:ring-2 focus:ring-[#1e3a8a]" value="" onChange={(e) => handleAddExtraItem(e.target.value)}>
                                 <option value="" disabled>اختر مادة إضافية مستهلكة (مثل شاش زائد)...</option>
                                 {inventoryItems.map(i => <option key={i.id} value={i.id}>{i.name} (متوفر: {i.quantity} {i.unit})</option>)}
                             </select>
                             <div className="space-y-2 mt-3">
                                 {extraItems.map((item, idx) => (
-                                    <div key={item.id} className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs border border-slate-200">
-                                        <span className="font-bold text-slate-700">{item.name}</span>
+                                    <div key={item.id} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-sm border border-slate-200">
+                                        <span className="font-bold text-slate-800">{item.name}</span>
                                         <div className="flex items-center gap-2">
-                                            <input type="number" min="1" className="w-14 border border-slate-200 text-center p-1 rounded-lg bg-white font-bold" value={item.qty} onChange={e => {
+                                            <input type="number" min="1" className="w-16 border border-slate-200 text-center p-1.5 rounded-lg bg-white font-bold text-slate-800" value={item.qty} onChange={e => {
                                                 const updated = [...extraItems];
                                                 updated[idx].qty = parseInt(e.target.value) || 1;
                                                 setExtraItems(updated);
                                             }} />
-                                            <span className="text-slate-400">{item.unit}</span>
-                                            <button type="button" onClick={() => setExtraItems(extraItems.filter(i => i.id !== item.id))} className="text-red-500 font-black mr-2">×</button>
+                                            <span className="text-slate-500 text-xs">{item.unit}</span>
+                                            <button type="button" onClick={() => setExtraItems(extraItems.filter(i => i.id !== item.id))} className="text-red-500 font-black hover:text-red-700 text-base mr-2">×</button>
                                         </div>
                                     </div>
                                 ))}

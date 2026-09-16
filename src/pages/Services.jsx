@@ -155,14 +155,14 @@ const Services = () => {
                     </div>
                 </div>
 
-                <div className="lg:col-span-2 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-700 mb-4">الخدمات الفعّالة والتسعير التلقائي</h3>
-                    <div className="overflow-hidden rounded-lg border border-gray-100 text-xs">
+                <div className="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                    <h3 className="font-bold text-slate-800 text-base mb-4">الخدمات الفعّالة والتسعير التلقائي</h3>
+                    <div className="overflow-hidden rounded-xl border border-slate-200 text-sm">
                         <table className="w-full text-right border-collapse">
-                            <thead className="bg-gray-50 text-gray-600 font-bold border-b">
+                            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs">
                                 <tr>
-                                    <th className="p-3">اسم الخدمة</th>
-                                    <th className="p-3">النقاط</th>
+                                    <th className="py-3 px-4">اسم الخدمة</th>
+                                    <th className="py-3 px-4">النقاط</th>
                                     <th className="p-3">السعر بالعملة المحلية</th>
                                     <th className="p-3">المستلزمات المرتبطة</th>
                                     <th className="p-3 text-center">العمليات</th>

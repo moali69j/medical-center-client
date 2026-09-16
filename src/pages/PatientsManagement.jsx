@@ -53,9 +53,9 @@ const PatientsManagement = () => {
         setShowProfileView(true);
         setLoadingHistory(true);
         try {
-            const res = await api.get(`/financial/reports?patient_id=${patient.id}`);
-            const filteredCases = res.data?.cases_details?.filter(c => c.patient_id === patient.id) || [];
-            setPatientHistory(filteredCases);
+            const res = await api.get(`/patients/${patient.id}/cases`);
+            const fetchedCases = res.data?.cases_details || [];
+            setPatientHistory(fetchedCases);
         } catch (err) {
             console.error("خطأ في جلب سجل زيارات المريض:", err);
             setPatientHistory([]);

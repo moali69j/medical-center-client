@@ -101,40 +101,40 @@ const Inventory = () => {
                 </div>
             </div>
 
-            <div className="bg-white shadow-md rounded-xl overflow-hidden border border-gray-100">
-                <table className="w-full text-right border-collapse text-xs">
+            <div className="bg-white shadow-md rounded-2xl overflow-hidden border border-slate-200/80">
+                <table className="w-full text-right border-collapse text-sm">
                     <thead>
-                        <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200 text-xs">
-                            <th className="p-4">اسم المادة</th>
-                            <th className="p-4">الكمية الحالية</th>
-                            <th className="p-4">وحدة القياس</th>
-                            <th className="p-4">حد العتبة</th>
-                            <th className="p-4">سعر تكلفة الشراء</th>
-                            <th className="p-4">طريقة الخصم</th>
-                            <th className="p-4 text-center">التحكم والعمليات</th>
+                        <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs">
+                            <th className="py-3.5 px-5">اسم المادة</th>
+                            <th className="py-3.5 px-5">الكمية الحالية</th>
+                            <th className="py-3.5 px-5">وحدة القياس</th>
+                            <th className="py-3.5 px-5">حد العتبة</th>
+                            <th className="py-3.5 px-5">سعر تكلفة الشراء</th>
+                            <th className="py-3.5 px-5">طريقة الخصم</th>
+                            <th className="py-3.5 px-5 text-center">التحكم والعمليات</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 text-gray-600">
+                    <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                         {items.map(item => {
                             const isLow = item.quantity <= item.threshold;
                             return (
-                                <tr key={item.id} className={`hover:bg-gray-50 transition ${isLow ? 'bg-red-50' : ''}`}>
-                                    <td className="p-4 font-bold text-gray-800">{item.name}</td>
-                                    <td className={`p-4 font-black text-sm ${isLow ? 'text-red-600 animate-pulse' : 'text-green-600'}`}>
+                                <tr key={item.id} className={`hover:bg-slate-50/80 transition ${isLow ? 'bg-rose-50/60' : ''}`}>
+                                    <td className="py-3.5 px-5 font-bold text-slate-900 text-sm">{item.name}</td>
+                                    <td className={`py-3.5 px-5 font-extrabold text-base ${isLow ? 'text-rose-600 animate-pulse' : 'text-emerald-700'}`}>
                                         {item.quantity} {isLow && '⚠️'}
                                     </td>
-                                    <td className="p-4 text-gray-400">{item.unit}</td>
-                                    <td className="p-4">{item.threshold}</td>
-                                    <td className="p-4 font-bold text-blue-600">{parseFloat(item.cost_price || 0).toLocaleString()} ل.س</td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${item.is_measurable ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
-                                            {item.is_measurable ? 'آلي مع الخدمة' : 'يدوي/كاش إضافي'}
+                                    <td className="py-3.5 px-5 text-slate-500 font-normal">{item.unit}</td>
+                                    <td className="py-3.5 px-5 font-semibold text-slate-600">{item.threshold}</td>
+                                    <td className="py-3.5 px-5 font-bold text-blue-700">{parseFloat(item.cost_price || 0).toLocaleString()} ل.س</td>
+                                    <td className="py-3.5 px-5">
+                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${item.is_measurable ? 'bg-blue-50 text-blue-700 border border-blue-200/60' : 'bg-amber-50 text-amber-800 border border-amber-200/60'}`}>
+                                            {item.is_measurable ? 'آلي مع الخدمات' : 'عهدة عيادة (صرف عبوة)'}
                                         </span>
                                     </td>
-                                    <td className="p-4 text-center flex justify-center gap-2">
-                                        <button onClick={() => { setSelectedItem(item); setActionType('add'); }} className="bg-green-600 text-white px-2 py-1 rounded text-[11px] hover:bg-green-700 transition shadow-sm">+ توريد</button>
-                                        <button onClick={() => { setSelectedItem(item); setActionType('subtract'); }} className="bg-amber-500 text-white px-2 py-1 rounded text-[11px] hover:bg-amber-600 transition shadow-sm">- استهلاك</button>
-                                        <button onClick={() => handleDeleteItem(item.id)} className="bg-red-50 text-red-600 px-2 py-1 rounded text-[11px] hover:bg-red-100 transition font-bold">🗑️ حذف</button>
+                                    <td className="py-3.5 px-5 text-center flex justify-center gap-2">
+                                        <button onClick={() => { setSelectedItem(item); setActionType('add'); }} className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs">+ توريد</button>
+                                        <button onClick={() => { setSelectedItem(item); setActionType('subtract'); }} className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs">- صرف للعيادة</button>
+                                        <button onClick={() => handleDeleteItem(item.id)} className="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-100 px-3 py-1.5 rounded-lg text-xs font-bold transition">🗑️ حذف</button>
                                     </td>
                                 </tr>
                             );
@@ -147,7 +147,11 @@ const Inventory = () => {
             {selectedItem && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full" dir="rtl">
-                        <h3 className="text-base font-bold text-gray-800 mb-2">{actionType === 'add' ? 'شراء وتوريد كمية جديدة' : 'تسجيل استهلاك يدوي'}</h3>
+                        <h3 className="text-base font-bold text-gray-800 mb-2">
+                            {actionType === 'add' 
+                                ? 'شراء وتوريد كمية للمستودع' 
+                                : (selectedItem.is_measurable ? 'تسجيل استهلاك يدوي / تالف' : 'صرف عبوة للعيادة / استهلاك عهدة')}
+                        </h3>
                         <p className="text-xs text-gray-500 mb-4">الصنف: <span className="font-bold text-gray-700">{selectedItem.name}</span></p>
                         <form onSubmit={handleStockUpdate} className="space-y-4">
                             <input type="number" step="0.1" required value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`الكمية بـ (${selectedItem.unit})...`} className="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
@@ -180,8 +184,8 @@ const Inventory = () => {
                             <input type="number" placeholder="حد العتبة للتنبيه" required className="w-full border p-2 rounded-lg" onChange={e => setNewItem({...newItem, threshold: e.target.value})} />
                             <input type="number" placeholder="سعر تكلفة الشراء المالي (للقطعة)" required className="w-full border p-2 rounded-lg bg-blue-50/40 font-bold" onChange={e => setNewItem({...newItem, cost_price: e.target.value})} />
                             <select className="w-full border p-2 rounded-lg" onChange={e => setNewItem({...newItem, is_measurable: e.target.value === 'true'})}>
-                                <option value="true">تلقائي (يربط ويدخل في حساب الخدمات)</option>
-                                <option value="false">يدوي (يصرف كمستهلك عام)</option>
+                                <option value="true">قابل للقياس (يربط بالخدمات ويُخصم بالقطعة آلياً)</option>
+                                <option value="false">عهدة عامة للعيادة (مرهم، معقم - يُصرف بالعبوة)</option>
                             </select>
                             <div className="flex gap-2 justify-end pt-2">
                                 <button type="submit" disabled={submitLoading} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold">{submitLoading ? 'جاري الحفظ...' : 'حفظ الصنف'}</button>

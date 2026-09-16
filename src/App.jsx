@@ -12,7 +12,7 @@ import BackupRestore from './pages/BackupRestore';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-slate-100/70 font-['Cairo'] text-slate-800 transition-colors duration-300" dir="rtl">
+      <div className="min-h-screen bg-slate-100/70 font-['Readex_Pro'] text-slate-800 transition-colors duration-300" dir="rtl">
         {/* شريط ملاحة علوي احترافي */}
         <nav className="bg-white border-b border-slate-200/80 sticky top-0 z-50 px-6 py-3.5 flex justify-between items-center shadow-xs">
           <Link to="/" className="flex items-center gap-3 group">
