@@ -8,6 +8,7 @@ import FinancialDashboard from './pages/FinancialDashboard';
 import ExpensesManagement from './pages/ExpensesManagement';
 import PatientsManagement from './pages/PatientsManagement';
 import BackupRestore from './pages/BackupRestore';
+import CasesLog from './pages/CasesLog';
 
 function App() {
   return (
@@ -45,6 +46,8 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/services" element={<Services />} />
             <Route path="/financial" element={<FinancialDashboard />} />
+            <Route path="/financial/cases" element={<CasesLog />} />
+            <Route path="/cases-log" element={<CasesLog />} />
             <Route path="/expenses-management" element={<ExpensesManagement />} />
             <Route path="/patients-management" element={<PatientsManagement />} />
             <Route path="/backup-restore" element={<BackupRestore />} />
